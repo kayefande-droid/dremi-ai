@@ -5,6 +5,16 @@ import { askDremi, getVibeAnalysis, speak } from "../services/geminiService";
 import { useVibe } from "../context/VibeContext";
 import { useRef } from "react";
 
+function TelemetryItem({ label, value, status }: { label: string, value: string, status: 'active' | 'info' | 'error' }) {
+  return (
+    <div className="flex items-center gap-2 shrink-0">
+        <div className={`w-1 h-1 rounded-full ${status === 'active' ? 'bg-green-500 animate-pulse' : status === 'info' ? 'bg-accent' : 'bg-red-500'}`} />
+        <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold">{label}:</span>
+        <span className="text-[10px] font-mono text-white/60 lowercase tracking-tighter">{value}</span>
+    </div>
+  );
+}
+
 export default function CodingWorkshop() {
   const { currentVibe, updateVibe } = useVibe();
   const [prompt, setPrompt] = useState("");
@@ -216,7 +226,7 @@ export default function CodingWorkshop() {
         setBuildHistory(prev => [{ id: historyId, prompt, vibe: currentVibe.name, timestamp: new Date().toLocaleTimeString() }, ...prev].slice(0, 5));
         
         // Synthesize high-fidelity architecture
-        const finalSnippet = await askDremi(`Generate a professional-grade React application skeleton for: "${prompt}". Use ${currentVibe.name} vibe with color ${currentVibe.color}. Return ONLY code.`, [], { prompt, vibe: currentVibe.name });
+        const finalSnippet = await askDremi(`Generate a professional-grade React application skeleton for: "${prompt}". Use ${currentVibe.name} vibe with color ${currentVibe.color}. Return ONLY code.`, [], { name: currentVibe.name, color: currentVibe.color });
         
         setProjectFiles({
             'vibe.config': `// Vibe: ${currentVibe.name}\nexport const theme = {\n  name: "${currentVibe.name}",\n  accent: "${currentVibe.color}",\n  version: "SYNAPSE_4.2"\n};`,
@@ -268,63 +278,90 @@ export default function CodingWorkshop() {
   };
 
   return (
-    <div className="flex flex-col h-full gap-4 overflow-y-auto scrollbar-hide">
-      {/* Vibe Persona Card (Preview) */}
-      <div className="panel flex-none relative overflow-hidden h-32 group">
-        <div 
-          className="absolute inset-0 transition-all duration-1000 opacity-20 group-hover:opacity-30" 
-          style={{ background: `radial-gradient(circle at center, ${currentVibe.color} 0%, transparent 100%)` }}
+    <div className="flex flex-col h-full gap-6 overflow-y-auto scrollbar-hide px-1">
+      {/* Editorial Persona Card */}
+      <div className="panel flex-none relative overflow-hidden h-40 group rounded-3xl border-accent/20 bg-black/40 backdrop-blur-xl">
+        <motion.div 
+          animate={{ 
+            opacity: [0.1, 0.2, 0.1],
+            scale: [1, 1.05, 1]
+          }} 
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute inset-0" 
+          style={{ background: `radial-gradient(circle at 100% 50%, ${currentVibe.color} 0%, transparent 80%)` }}
         />
-        <div className="relative h-full flex flex-col justify-center px-6">
-          <div className="stat-label uppercase tracking-widest text-[10px]">Visual Persona</div>
-          <div className="text-2xl font-serif italic text-white tracking-wide">{currentVibe.name}</div>
-          <div className="flex gap-2 mt-2">
-             <div className="w-8 h-1 rounded-full bg-accent" />
-             <div className="w-4 h-1 rounded-full bg-accent opacity-50" />
+        <div className="relative h-full flex flex-col justify-between p-8">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+                <span className="w-8 h-px bg-accent/40" />
+                <span className="text-[9px] uppercase tracking-[0.5em] text-accent font-black">Design Persona</span>
+            </div>
+            <h1 className="text-4xl font-serif leading-none text-white overflow-hidden text-ellipsis">
+              {currentVibe.name}
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-6">
+             <div className="flex flex-col">
+                <span className="text-[8px] uppercase tracking-widest text-text-muted mb-1">Affinity</span>
+                <span className="text-xs font-mono text-accent">SYN_94.2%</span>
+             </div>
+             <div className="flex flex-col">
+                <span className="text-[8px] uppercase tracking-widest text-text-muted mb-1">Protocol</span>
+                <span className="text-xs font-mono text-white/80">LUXE_MODERN</span>
+             </div>
              <button 
                 onClick={handleSaveVibe}
-                className="text-[8px] uppercase tracking-widest text-accent font-bold hover:text-white transition-colors ml-2"
-                title="Archive Current Aesthetic"
+                className="ml-auto px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-[9px] uppercase tracking-[0.2em] font-black text-accent transition-all"
              >
-                Archive Vibe +
+                Archive Persona
              </button>
           </div>
         </div>
-        <div className="absolute right-6 top-1/2 -translate-y-1/2">
-           <div 
-             className={`w-12 h-12 rounded-full border-2 transition-all duration-1000 ${isGenerating ? 'animate-ping' : 'animate-pulse'}`} 
-             style={{ borderColor: currentVibe.color, boxShadow: `0 0 20px ${currentVibe.color}44` }} 
-           />
-        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute -right-10 -bottom-10 w-40 h-40 border border-accent/10 rounded-full" />
+        <div className="absolute -right-5 -bottom-5 w-40 h-40 border border-accent/5 rounded-full" />
       </div>
 
-      <div className="panel flex-none p-4 !bg-black/80 border-t-2 border-accent/20">
-          <div className="flex flex-col gap-4">
+      {/* Synthesis Input Strip */}
+      <div className="panel flex-none p-6 !bg-black/90 border-t-2 border-accent/20 rounded-3xl shadow-2xl">
+          <div className="flex flex-col gap-5">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center border border-accent/20">
+                        <Terminal size={18} className="text-accent" />
+                    </div>
                     <div className="flex flex-col">
-                        <span className="text-[7px] uppercase tracking-[0.3em] text-accent font-black">Neural Injection Port</span>
-                        <span className="text-[9px] text-text-muted">Direct protocol stream via SYNAPSE-6.4</span>
+                        <span className="text-[9px] uppercase tracking-[0.4em] text-accent font-black">System Terminal</span>
+                        <span className="text-[11px] text-white/40 font-light">Enter high-fidelity architectural requirements</span>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <button 
+                <div className="flex gap-3">
+                     <button 
                         onClick={toggleVoice}
-                        className={`p-2 rounded-lg border transition-all ${isListening ? 'bg-red-500/20 border-red-500 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-white/5 border-white/10 text-text-muted hover:text-white'}`}
-                        title="Voice Injection"
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isListening ? 'bg-red-500/20 text-red-500 border border-red-500' : 'bg-white/5 text-white/30 border border-white/10 hover:text-white'}`}
                     >
-                        {isListening ? <Mic size={14} className="animate-pulse" /> : <MicOff size={14} />}
+                        {isListening ? <Mic size={16} className="animate-pulse" /> : <MicOff size={16} />}
                     </button>
-                    <div className="flex gap-1 overflow-x-auto max-w-[200px] scrollbar-hide">
-                         {['Cyberpunk', 'Minimalist', 'Brutalist', 'Hotel App', 'SaaS Platform'].map((v) => (
-                             <button 
-                                key={v}
-                                onClick={() => setPrompt(`Build a high-fidelity ${v.toLowerCase()} with professional neural architecture.`)}
-                                className="bg-white/5 border border-white/10 text-white/40 hover:text-white px-2 py-1 rounded text-[7px] uppercase tracking-widest font-bold transition-all whitespace-nowrap"
-                             >
-                                {v}
-                             </button>
-                         ))}
+                    <div className="h-10 w-px bg-white/5" />
+                    <div className="flex gap-2">
+                        {[
+                          { name: 'Blog', prompt: 'Build a high-fidelity Blog platform with technical editorial aesthetic.' },
+                          { name: 'E-com', prompt: 'Synthesize a professional E-commerce engine with dark luxury architecture.' },
+                          { name: 'Portfolio', prompt: 'Create a minimalist designer portfolio with smooth transition protocols.' }
+                        ].map((v) => (
+                            <button 
+                                key={v.name}
+                                onClick={() => {
+                                    setPrompt(v.prompt);
+                                    speak(`Initializing ${v.name} template protocol.`);
+                                }}
+                                className="px-4 bg-white/5 border border-white/10 rounded-xl text-[8px] uppercase tracking-widest font-black text-white/40 hover:text-accent hover:border-accent transition-all"
+                            >
+                                {v.name}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -335,50 +372,42 @@ export default function CodingWorkshop() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleDeploy()}
-                    placeholder="Describe your architectural requirements..."
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-accent/50 transition-all font-mono"
+                    placeholder="E.g., 'Modern real estate platform with dark luxury aesthetic'"
+                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 text-sm text-white placeholder:text-white/10 focus:outline-none focus:border-accent/40 transition-all font-light tracking-wide"
                     disabled={isGenerating}
                 />
                 <button 
                     onClick={handleDeploy}
                     disabled={isGenerating}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent hover:bg-accent-light disabled:opacity-50 text-white px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-accent/20 flex items-center gap-2 group-hover:scale-[1.02]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 h-[calc(100%-20px)] bg-accent hover:bg-accent-light disabled:opacity-50 text-black px-8 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl shadow-accent/20 flex items-center gap-3"
                 >
                     {isGenerating ? (
                         <>
-                            <Zap size={12} className="animate-spin" />
+                            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}>
+                                <Zap size={14} fill="currentColor" />
+                            </motion.div>
                             Synthesizing
                         </>
                     ) : (
                         <>
-                            <Play size={12} fill="currentColor" />
+                            <Play size={14} fill="currentColor" />
                             Inject Logic
                         </>
                     )}
                 </button>
             </div>
             
-            <div className="flex items-center gap-6 px-1">
-                <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[8px] uppercase tracking-widest text-text-muted">Link: STABLE</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                    <span className="text-[8px] uppercase tracking-widest text-text-muted">Buffer: CLEAR</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    <span className="text-[8px] uppercase tracking-widest text-text-muted">Latency: 12ms</span>
-                </div>
-                <div className="ml-auto text-[8px] font-mono text-white/20">
-                    Dremi Core v2.4.SYN
-                </div>
+            <div className="flex items-center gap-8 px-2 overflow-x-auto scrollbar-hide">
+                <TelemetryItem label="Connection" value="SECURE" status="active" />
+                <TelemetryItem label="Buffer" value="CLEAN" status="active" />
+                <TelemetryItem label="Latency" value="12ms" status="info" />
+                <TelemetryItem label="Uptime" value="99.9%" status="active" />
+                <div className="ml-auto text-[8px] font-mono text-white/10 uppercase tracking-[0.2em]">Dremi_Core_Engine_v4.2</div>
             </div>
           </div>
         </div>
 
-      <div className="flex-1 panel !p-0 overflow-hidden flex flex-col min-h-[350px]">
+      <div className="flex-1 panel !p-0 overflow-hidden flex flex-col min-h-[450px] rounded-3xl border-white/5 bg-black/20">
         {/* Header/Controls */}
         <div className="flex justify-between items-center p-4 border-b border-white/5 bg-black/20">
           <div className="flex items-center gap-4">
@@ -539,58 +568,82 @@ export default function CodingWorkshop() {
                     <motion.div 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="flex-1 flex flex-col items-center justify-center gap-8 relative"
+                        className="flex-1 flex flex-col items-center justify-center gap-12 relative"
                     >
+                        {/* Elegant Atmospheric Particles */}
                         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                             {Array.from({ length: 20 }).map((_, i) => (
+                             {Array.from({ length: 15 }).map((_, i) => (
                                  <motion.div 
                                     key={i}
-                                    initial={{ y: "100%", opacity: 0 }}
-                                    animate={{ y: "-100%", opacity: [0, 0.5, 0] }}
-                                    transition={{ duration: 2 + Math.random() * 3, repeat: Infinity, delay: Math.random() * 5 }}
-                                    className="absolute w-px bg-accent/20"
-                                    style={{ left: `${Math.random() * 100}%`, height: `${20 + Math.random() * 30}%` }}
+                                    initial={{ y: "110%", opacity: 0 }}
+                                    animate={{ y: "-100%", opacity: [0, 0.4, 0] }}
+                                    transition={{ duration: 3 + Math.random() * 4, repeat: Infinity, delay: Math.random() * 8 }}
+                                    className="absolute w-[2px] bg-accent/30 rounded-full"
+                                    style={{ left: `${Math.random() * 100}%`, height: `${40 + Math.random() * 60}px` }}
                                  />
                              ))}
                         </div>
 
-                        <div className="relative w-48 h-48">
+                        <div className="relative w-64 h-64">
                              <motion.div 
                                 animate={{ rotate: 360 }}
-                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                                className="absolute inset-0 border-2 border-dashed border-accent/20 rounded-full"
+                                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-0 border-[0.5px] border-accent/20 rounded-full"
                              />
                              <motion.div 
                                 animate={{ rotate: -360 }}
-                                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                                className="absolute inset-4 border border-dashed border-accent/40 rounded-full"
+                                transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+                                className="absolute inset-6 border-[0.5px] border-white/5 rounded-full"
                              />
-                             <div className="absolute inset-0 flex items-center justify-center">
-                                 <div className="flex flex-col items-center gap-1">
-                                     <Sparkles size={32} className="text-accent animate-pulse" />
-                                     <div className="text-[10px] font-black uppercase tracking-[0.4em] text-accent mt-2">Synthesizing</div>
-                                     <div className="text-[8px] text-white/40 font-mono">Iteration {activeStep + 1}/4</div>
-                                 </div>
+                             <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                 <motion.div
+                                    animate={{ 
+                                        scale: [1, 1.1, 1],
+                                        boxShadow: [
+                                            "0 0 40px rgba(212, 175, 55, 0.1)",
+                                            "0 0 80px rgba(212, 175, 55, 0.3)",
+                                            "0 0 40px rgba(212, 175, 55, 0.1)"
+                                        ]
+                                    }}
+                                    transition={{ duration: 4, repeat: Infinity }}
+                                    className="w-20 h-20 rounded-2xl bg-black border border-accent/40 flex items-center justify-center"
+                                 >
+                                     <Sparkles size={32} className="text-accent" />
+                                 </motion.div>
+                                 <div className="text-[9px] font-black uppercase tracking-[0.6em] text-accent mt-6 ml-1">Synthesis</div>
+                                 <div className="text-[7px] text-white/20 font-mono mt-1">Iteration_{activeStep + 1}</div>
                              </div>
                         </div>
 
-                        <div className="w-64 space-y-4">
+                        <div className="w-72 space-y-3 px-8">
                             {projectSteps.map((step, i) => (
-                                <div key={i} className="flex items-center gap-4">
-                                    <div className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${i <= activeStep ? 'bg-accent shadow-[0_0_8px_var(--color-accent)]' : 'bg-white/10'}`} />
-                                    <div className={`text-[10px] uppercase tracking-widest transition-all duration-500 ${i <= activeStep ? 'text-white' : 'text-text-muted'}`}>
+                                <motion.div 
+                                    key={i} 
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ 
+                                        opacity: i <= activeStep ? 1 : 0.2, 
+                                        x: 0,
+                                        scale: i === activeStep ? 1.02 : 1
+                                    }}
+                                    className="flex items-center gap-5"
+                                >
+                                    <div className={`w-2 h-2 rounded-full transition-all duration-700 ${i <= activeStep ? 'bg-accent shadow-[0_0_10px_var(--color-accent)]' : 'bg-white/5'}`} />
+                                    <div className={`text-[10px] uppercase tracking-[0.2em] font-black transition-all duration-700 ${i <= activeStep ? 'text-white' : 'text-white/20'}`}>
                                         {step.label}
                                     </div>
                                     {i === activeStep && (
-                                        <motion.div 
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="ml-auto text-[8px] font-mono text-accent"
-                                        >
-                                            ACTIVE
-                                        </motion.div>
+                                        <div className="ml-auto flex gap-1">
+                                            {[0, 1, 2].map(j => (
+                                                <motion.div 
+                                                    key={j}
+                                                    animate={{ opacity: [0.1, 1, 0.1] }}
+                                                    transition={{ duration: 1, repeat: Infinity, delay: j * 0.2 }}
+                                                    className="w-0.5 h-2 bg-accent/40"
+                                                />
+                                            ))}
+                                        </div>
                                     )}
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     </motion.div>

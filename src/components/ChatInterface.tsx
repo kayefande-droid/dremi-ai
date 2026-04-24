@@ -104,63 +104,97 @@ const [isListening, setIsListening] = useState(false);
   };
 
   return (
-    <div className="flex flex-col h-full panel !p-0 overflow-hidden border-border/50">
-      <div ref={scrollRef} className="flex-1 p-6 overflow-y-auto space-y-6 scrollbar-hide">
+    <div className="flex flex-col h-full panel !p-0 overflow-hidden border-border/50 bg-black/40 backdrop-blur-md">
+      {/* Thread Content */}
+      <div ref={scrollRef} className="flex-1 p-8 overflow-y-auto space-y-10 scrollbar-hide">
         <AnimatePresence initial={false}>
           {messages.map((msg, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, x: msg.role === 'user' ? 10 : -10 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[85%] text-sm leading-relaxed ${
-                msg.role === 'user' 
-                ? 'text-accent border-r-2 border-accent pr-4 py-1' 
-                : 'text-text-muted border-l-2 border-border pl-4 py-1'
-              }`}>
-                <div className="stat-label mb-1">
-                  {msg.role === 'user' ? 'User' : 'Dremi.ai'}
+              <div className={`group relative max-w-[85%] ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                {/* Meta Tag */}
+                <div className={`text-[8px] uppercase tracking-[0.4em] font-black mb-3 ${msg.role === 'user' ? 'text-accent' : 'text-white/40'}`}>
+                  {msg.role === 'user' ? 'PROMPT_PROTOCOL' : 'CORE_SYNTHESIS'}
                 </div>
-                <p className={`${msg.role === 'dremi' ? '' : 'text-white'}`}>{msg.text}</p>
+                
+                {/* Message Body */}
+                <div className={`relative px-6 py-4 rounded-2xl border ${
+                  msg.role === 'user' 
+                  ? 'bg-accent/5 border-accent/20 text-white shadow-[0_0_20px_rgba(212,175,55,0.05)]' 
+                  : 'bg-white/5 border-white/5 text-white/80'
+                }`}>
+                  <p className="text-sm font-light leading-relaxed tracking-wide">
+                    {msg.text}
+                  </p>
+                  
+                  {/* Decorative corner for Dremi */}
+                  {msg.role === 'dremi' && (
+                    <div className="absolute -left-[1px] top-4 w-[2px] h-4 bg-accent shadow-[0_0_8px_var(--color-accent)]" />
+                  )}
+                </div>
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
         {isLoading && (
-          <div className="flex justify-start">
-             <div className="text-accent text-[10px] uppercase tracking-widest animate-pulse font-mono pl-4 border-l-2 border-accent">
-               Analyzing intent...
-             </div>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col gap-2 pl-6"
+          >
+            <div className="text-[8px] uppercase tracking-[0.4em] font-black text-accent animate-pulse">Processing Protocol</div>
+            <div className="flex gap-1">
+                {[0, 1, 2].map(i => (
+                    <motion.div 
+                        key={i}
+                        animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                        className="w-1 h-1 rounded-full bg-accent"
+                    />
+                ))}
+            </div>
+          </motion.div>
         )}
       </div>
 
-      <div className="p-4 bg-black/20 border-t border-border flex gap-3">
-        <div className="flex-1 relative flex items-center">
-            <input 
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Awaiting command..."
-            className="w-full bg-[#141417] border border-border rounded-full px-6 py-3 text-sm focus:outline-none focus:border-accent transition-colors text-white placeholder:text-text-muted"
-            />
-            <div className="absolute right-4 flex items-center gap-2">
+      {/* Input Section */}
+      <div className="p-6 bg-black border-t-2 border-accent/10 relative overflow-hidden">
+        {/* Ambient Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
+        
+        <div className="flex gap-4 items-center">
+            <div className="flex-1 relative flex items-center group">
+                <input 
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                    placeholder="Enter system instruction..."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-light tracking-wide focus:outline-none focus:border-accent/50 transition-all text-white placeholder:text-white/20"
+                />
                 <button 
                   onClick={toggleVoiceInput}
-                  className={`p-1 transition-colors ${isListening ? 'text-accent animate-pulse' : 'text-text-muted hover:text-accent'}`}
+                  className={`absolute right-4 p-2 rounded-lg transition-all ${isListening ? 'bg-red-500/10 text-red-500' : 'text-white/20 hover:text-accent'}`}
                 >
-                  <Mic size={18} />
+                  <Mic size={18} className={isListening ? 'animate-pulse' : ''} />
                 </button>
             </div>
+            
+            <button 
+                onClick={() => handleSend()}
+                className="w-12 h-12 bg-accent rounded-2xl text-black flex items-center justify-center hover:scale-[1.05] active:scale-95 transition-all shadow-xl shadow-accent/20"
+            >
+                <Send size={20} fill="currentColor" />
+            </button>
         </div>
-        <button 
-          onClick={() => handleSend()}
-          className="bg-accent p-3 rounded-full text-white hover:bg-accent/80 transition-colors shadow-lg shadow-accent/20"
-        >
-          <Send size={18} />
-        </button>
+        
+        <div className="mt-3 flex justify-center">
+            <span className="text-[7px] uppercase tracking-[0.4em] text-white/20 font-black">Secure Multi-Modal Interface v4.0</span>
+        </div>
       </div>
     </div>
   );

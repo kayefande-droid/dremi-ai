@@ -7,7 +7,7 @@ import { speak } from "../services/geminiService";
 export default function Dashboard() {
   const { currentVibe } = useVibe();
   const [stats, setStats] = useState({
-    kernel: 'Optimal',
+    kernel: 'MASTER_SYN',
     vibeValue: currentVibe.name,
     neural: 99.4,
     battery: 100,
@@ -24,84 +24,111 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4 h-full overflow-y-auto scrollbar-hide pb-20">
-      {/* Dynamic Vibe Visualization */}
-      <div className="panel flex-none p-0 overflow-hidden relative h-40 group">
+    <div className="flex flex-col gap-6 h-full overflow-y-auto scrollbar-hide pb-20 px-2">
+      {/* Editorial Header */}
+      <div className="pt-8 pb-4">
+        <span className="text-[10px] uppercase tracking-[0.5em] text-accent font-black mb-2 block">Central Neural Link</span>
+        <h2 className="text-5xl font-serif leading-none text-white tracking-tighter">
+          {currentVibe.name} <br/> 
+          <span className="italic text-accent font-light opacity-80">Protocol</span>
+        </h2>
+      </div>
+
+      {/* Hero Visualizer */}
+      <div className="panel flex-none p-0 overflow-hidden relative h-52 group rounded-3xl border-accent/20">
         <motion.div 
             animate={{ 
-                scale: [1, 1.1, 1],
-                rotate: [0, 5, 0]
+                scale: [1, 1.05, 1],
+                opacity: [0.15, 0.25, 0.15]
             }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 opacity-30"
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0"
             style={{ 
-                background: `conic-gradient(from 180deg at 50% 50%, ${currentVibe.color} 0deg, transparent 180deg, ${currentVibe.color} 360deg)` 
+                background: `radial-gradient(circle at 50% 50%, ${currentVibe.color} 0%, transparent 70%)` 
             }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
-        <div className="relative h-full flex flex-col justify-end p-6">
-            <div className="flex items-center gap-2 mb-1">
-                <div className="w-2 h-2 rounded-full bg-accent animate-ping" />
-                <span className="stat-label !mb-0 font-bold uppercase tracking-widest text-[9px]">Neural Pulse Active</span>
-            </div>
-            <h2 className="text-3xl font-serif italic text-white">{currentVibe.name}</h2>
-            <div className="text-[10px] text-text-muted font-mono mt-1 opacity-70">
-                Wavelength: 642nm | Affinity: {stats.neural}%
-            </div>
-        </div>
-      </div>
-
-      <div className="panel flex-none relative">
-        <div className="stat-label mb-4 flex items-center gap-2">
-            <Cpu size={12} className="text-accent" />
-            System Metries
-        </div>
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
         
-        <SystemStat label="Kernel Status" value={stats.kernel} progress={88} />
-        <SystemStat label="Neural Sync" value={`${stats.neural}%`} progress={stats.neural} />
-        <SystemStat label="Vibe Intensity" value="Adaptive" progress={currentVibe.intensity * 100} />
-      </div>
-      
-      <div className="grid grid-cols-2 gap-3">
-        <div className="panel !p-4 flex flex-col gap-1 hover:border-accent/40 transition-colors cursor-pointer">
-          <span className="stat-label">Device Link</span>
-          <span className="stat-value text-accent flex items-center gap-2">
-            <Smartphone size={14} /> Mobile.v3
-          </span>
-        </div>
-        <div className="panel !p-4 flex flex-col gap-1 hover:border-accent/40 transition-colors cursor-pointer">
-          <span className="stat-label">Encryption</span>
-          <span className="stat-value text-white/90">AES-256 GCM</span>
+        {/* Decorative Grid */}
+        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(rgba(212, 175, 55, 0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+
+        <div className="relative h-full flex flex-col justify-between p-6">
+            <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_var(--color-accent)]" />
+                    <span className="text-[8px] uppercase tracking-[0.3em] font-black text-white/50">Core.v42_synapse</span>
+                </div>
+                <div className="text-[8px] font-mono text-accent/60">NODE_ID: DARK_STAR_9</div>
+            </div>
+            
+            <div className="flex items-end justify-between">
+                <div>
+                    <div className="text-[10px] text-text-muted font-mono mb-1">SYNAPTIC_WAVEFORM</div>
+                    <div className="flex gap-1 h-8 items-end">
+                        {Array.from({ length: 24 }).map((_, i) => (
+                            <motion.div 
+                                key={i}
+                                animate={{ height: [4, 12 + Math.random() * 20, 4] }}
+                                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.05 }}
+                                className="w-1 bg-accent/40 rounded-full"
+                            />
+                        ))}
+                    </div>
+                </div>
+                <div className="text-right">
+                    <div className="text-[2rem] font-serif italic text-white leading-none">{stats.neural}%</div>
+                    <div className="text-[8px] uppercase tracking-widest text-text-muted">Stability Factor</div>
+                </div>
+            </div>
         </div>
       </div>
 
-      <div className="panel mt-4 !bg-accent/10 border-accent/20">
-        <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] uppercase tracking-widest text-accent font-black">PWA Infrastructure</span>
-            <Download size={16} className="text-accent ring-4 ring-accent/10 rounded-full" />
+      {/* Main Grid Components */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="panel flex flex-col gap-6 border-white/5">
+            <div className="flex items-center justify-between">
+                <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-text-muted">Telemetry</span>
+                <Cpu size={14} className="text-accent/40" />
+            </div>
+            
+            <div className="space-y-4">
+                <SystemStat label="Heuristic Alignment" value="OPTIMAL" progress={92} />
+                <SystemStat label="Energy Consumption" value="0.4mW" progress={12} />
+                <SystemStat label="Neural Density" value="HIGH" progress={84} />
+            </div>
         </div>
-        <div className="flex flex-col gap-3">
-           <div className="flex items-center justify-between px-1">
-                <span className="text-[7px] uppercase tracking-[0.4em] text-accent font-black">Initialization Protocol</span>
-                <div className="flex gap-1">
-                    <div className="w-1 h-1 rounded-full bg-accent animate-pulse" />
-                    <div className="w-1 h-1 rounded-full bg-accent animate-pulse delay-75" />
+
+        <div className="flex flex-col gap-4">
+            <div className="panel flex-1 bg-accent/5 border-accent/20 flex flex-col justify-between p-5 min-h-[140px]">
+                <div className="flex justify-between items-start">
+                    <Sparkles size={16} className="text-accent" />
+                    <div className="bg-accent/20 text-accent text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Premium</div>
                 </div>
-           </div>
-           <button 
-             onClick={() => {
-                speak("To initialize full integration, open your device menu and select 'Add to Home Screen'. This will enable full-screen protocol and background processing.");
-             }}
-             className="bg-accent text-white text-center py-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-accent/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-           >
-             <Smartphone size={14} />
-             Initialize Core PWA
-           </button>
-           <p className="text-[9px] text-text-muted text-center leading-relaxed px-4">
-             Unlock full-screen mode, biometrics, and background protocols. 
-             Optimized for low-latency neural processing.
-           </p>
+                <div>
+                    <h3 className="text-lg font-serif italic text-white">Vibe Architecture</h3>
+                    <p className="text-[9px] text-text-muted leading-relaxed mt-1">
+                        Synthesizing high-fidelity aesthetic protocols for your interface.
+                    </p>
+                </div>
+            </div>
+
+            <button 
+                onClick={() => speak("Initializing PWA link. Please check your browser menu for full integration options.")}
+                className="panel !p-4 bg-white/5 hover:bg-white/10 transition-all border-white/10 flex items-center justify-between group"
+            >
+                <div className="flex flex-col items-start gap-1">
+                    <span className="text-[8px] uppercase tracking-widest text-accent font-black">Mobile Integration</span>
+                    <span className="text-xs text-white">Initialize Link</span>
+                </div>
+                <Download size={18} className="text-text-muted group-hover:text-accent transition-colors" />
+            </button>
         </div>
+      </div>
+
+      {/* Bottom Info Bar */}
+      <div className="mt-auto px-2 flex justify-between items-center text-[7px] uppercase tracking-[0.3em] font-black text-white/20">
+          <span>Dremi Ecosystem © 2026</span>
+          <span className="text-accent/40">Secure Connection: TLS 1.3</span>
       </div>
     </div>
   );
@@ -109,16 +136,16 @@ export default function Dashboard() {
 
 function SystemStat({ label, value, progress }: { label: string, value: string, progress: number }) {
   return (
-    <div className="mb-5 last:mb-0">
-      <div className="flex justify-between items-end mb-1">
-        <span className="stat-label !mb-0">{label}</span>
-        <span className="stat-value">{value}</span>
+    <div className="space-y-2">
+      <div className="flex justify-between items-end">
+        <span className="text-[8px] uppercase tracking-widest text-white/40">{label}</span>
+        <span className="text-[10px] font-mono text-white/80">{value}</span>
       </div>
-      <div className="progress-bg">
+      <div className="h-[2px] bg-white/5 w-full rounded-full overflow-hidden">
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
-          className="progress-fill shadow-[0_0_10px_rgba(99,102,241,0.3)]"
+          className="h-full bg-accent shadow-[0_0_8px_var(--color-accent)]"
         />
       </div>
     </div>
