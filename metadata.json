@@ -1,5 +1,5 @@
 {
-  "name": "Dremi AI",
+  "name": "Dremi Jarvis AI",
   "description": "Your Jarvis-inspired AI with advanced NLP, context-aware memory, and 'Vibe Coding' engine. A high-performance PWA optimized for mobile download.",
   "requestFramePermissions": ["camera", "microphone", "geolocation"]
 }

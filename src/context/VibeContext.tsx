@@ -1,19 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Vibe = {
+interface Vibe {
   name: string;
   color: string;
   intensity: number;
-};
+}
 
 interface VibeContextType {
   currentVibe: Vibe;
   updateVibe: (name: string, color: string) => void;
+  isSyncing: boolean;
 }
 
 const VibeContext = createContext<VibeContextType | undefined>(undefined);
 
 export function VibeProvider({ children }: { children: React.ReactNode }) {
+  const [isSyncing, setIsSyncing] = useState(false);
   const [currentVibe, setCurrentVibe] = useState<Vibe>({
     name: 'Neutral Optimal',
     color: '#6366f1',
@@ -31,13 +33,16 @@ export function VibeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateVibe = (name: string, color: string) => {
+    setIsSyncing(true);
     setCurrentVibe({ name, color, intensity: 0.8 });
-    // Update CSS Variable for global theme usage
     document.documentElement.style.setProperty('--color-accent', color);
+    
+    // Simulate neural sync delay
+    setTimeout(() => setIsSyncing(false), 2000);
   };
 
   return (
-    <VibeContext.Provider value={{ currentVibe, updateVibe }}>
+    <VibeContext.Provider value={{ currentVibe, updateVibe, isSyncing }}>
       {children}
     </VibeContext.Provider>
   );

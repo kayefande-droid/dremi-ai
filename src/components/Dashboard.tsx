@@ -23,14 +23,38 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="panel flex-none relative overflow-hidden">
-        <div className="absolute inset-0 bg-accent/5 pointer-events-none" />
-        <div className="stat-label mb-4 flex items-center gap-2">
-            <Sparkles size={12} className="text-accent" />
-            Current Neural Vibe
+    <div className="flex flex-col gap-4 h-full overflow-y-auto scrollbar-hide pb-20">
+      {/* Dynamic Vibe Visualization */}
+      <div className="panel flex-none p-0 overflow-hidden relative h-40 group">
+        <motion.div 
+            animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, 0]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 opacity-30"
+            style={{ 
+                background: `conic-gradient(from 180deg at 50% 50%, ${currentVibe.color} 0deg, transparent 180deg, ${currentVibe.color} 360deg)` 
+            }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
+        <div className="relative h-full flex flex-col justify-end p-6">
+            <div className="flex items-center gap-2 mb-1">
+                <div className="w-2 h-2 rounded-full bg-accent animate-ping" />
+                <span className="stat-label !mb-0 font-bold uppercase tracking-widest text-[9px]">Neural Pulse Active</span>
+            </div>
+            <h2 className="text-3xl font-serif italic text-white">{currentVibe.name}</h2>
+            <div className="text-[10px] text-text-muted font-mono mt-1 opacity-70">
+                Wavelength: 642nm | Affinity: {stats.neural}%
+            </div>
         </div>
-        <div className="text-2xl font-serif italic mb-4">{currentVibe.name}</div>
+      </div>
+
+      <div className="panel flex-none relative">
+        <div className="stat-label mb-4 flex items-center gap-2">
+            <Cpu size={12} className="text-accent" />
+            System Metries
+        </div>
         
         <SystemStat label="Kernel Status" value={stats.kernel} progress={88} />
         <SystemStat label="Neural Sync" value={`${stats.neural}%`} progress={stats.neural} />
@@ -38,33 +62,33 @@ export default function Dashboard() {
       </div>
       
       <div className="grid grid-cols-2 gap-3">
-        <div className="panel !p-4 flex flex-col gap-1">
+        <div className="panel !p-4 flex flex-col gap-1 hover:border-accent/40 transition-colors cursor-pointer">
           <span className="stat-label">Device Link</span>
           <span className="stat-value text-accent flex items-center gap-2">
             <Smartphone size={14} /> Mobile.v3
           </span>
         </div>
-        <div className="panel !p-4 flex flex-col gap-1">
+        <div className="panel !p-4 flex flex-col gap-1 hover:border-accent/40 transition-colors cursor-pointer">
           <span className="stat-label">Encryption</span>
-          <span className="stat-value">E2EE Active</span>
+          <span className="stat-value text-white/90">AES-256 GCM</span>
         </div>
       </div>
 
-      <div className="panel mt-auto !bg-accent">
+      <div className="panel mt-4 !bg-accent/10 border-accent/20">
         <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] uppercase tracking-widest text-white/70 font-bold">Deploy to Mobile</span>
-            <Download size={16} className="text-white" />
+            <span className="text-[10px] uppercase tracking-widest text-accent font-black">PWA Infrastructure</span>
+            <Download size={16} className="text-accent ring-4 ring-accent/10 rounded-full" />
         </div>
         <div className="flex flex-col gap-3">
            <button 
-             onClick={() => alert("Dremi PWA is ready. Use 'Add to Home Screen' in your browser settings to install as an app.")}
-             className="bg-white text-black text-center py-3 rounded-lg font-bold text-xs shadow-xl active:scale-95 transition-all"
+             onClick={() => window.alert("To install Dremi:\n1. Open browser menu\n2. Tap 'Add to Home Screen'\n3. Launch from your apps list for full-screen JARVIS experience.")}
+             className="bg-accent text-white text-center py-4 rounded-xl font-bold text-xs shadow-xl shadow-accent/20 active:scale-95 transition-all"
            >
-             INSTALL DREMI (PWA)
+             INSTALL DREMI CORE
            </button>
-           <p className="text-[9px] text-white/50 text-center leading-relaxed">
-             Cross-platform compatible via web-standard PWA. 
-             Supports offline cache and push notifications.
+           <p className="text-[9px] text-text-muted text-center leading-relaxed px-4">
+             Unlock full-screen mode, biometrics, and background protocols. 
+             Optimized for low-latency neural processing.
            </p>
         </div>
       </div>

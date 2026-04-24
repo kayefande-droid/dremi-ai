@@ -15,9 +15,9 @@ export default function Layout({ children, activeTab, onTabChange }: {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-bg text-white p-4 font-sans select-none">
+    <div className="flex flex-col h-[100dvh] bg-bg text-white p-4 font-sans select-none safe-area-inset md:max-w-[480px] md:mx-auto md:border-x md:border-border/30">
       {/* Top Status Bar with Branding */}
-      <div className="flex justify-between items-start mb-6 px-2">
+      <div className="flex justify-between items-start mb-4 px-2 shrink-0">
         <div className="branding">
           Dremi<span>.ai</span>
         </div>
@@ -33,7 +33,7 @@ export default function Layout({ children, activeTab, onTabChange }: {
       </main>
 
       {/* Futuristic Bottom Navigation */}
-      <nav className="mt-6 panel !p-2 flex justify-around items-center !flex-row border-border/50">
+      <nav className="mt-4 panel !p-1.5 flex justify-around items-center !flex-row border-border/50 shrink-0">
         <NavButton 
           active={activeTab === 'core'} 
           onClick={() => onTabChange('core')} 

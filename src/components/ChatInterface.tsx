@@ -1,16 +1,15 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useRef, useEffect } from "react";
 import { Send, User, Cpu, Mic } from "lucide-react";
-import { askDremi, getVibeAnalysis } from "../services/geminiService";
+import { askDremi, getVibeAnalysis, speak } from "../services/geminiService";
 import { useVibe } from "../context/VibeContext";
-import { Content } from "@google/genai";
 
 export default function ChatInterface() {
   const { updateVibe } = useVibe();
   const [messages, setMessages] = useState<{ role: 'user' | 'dremi', text: string }[]>([
     { role: 'dremi', text: "Initialize protocol delta... Awaiting system instruction." }
   ]);
-  const [history, setHistory] = useState<Content[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -19,16 +18,64 @@ export default function ChatInterface() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
-    const userMsg = input.trim();
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false);
+        // Instant trigger for Jarvis experience
+        setTimeout(() => {
+          handleSend(transcript);
+        }, 300);
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
+
+  const toggleVoiceInput = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      if (!recognitionRef.current) {
+        alert("Speech recognition is not supported in this browser.");
+        return;
+      }
+      setIsListening(true);
+      recognitionRef.current?.start();
+    }
+  };
+
+  const handleSend = async (overrideInput?: string) => {
+    const userMsg = (overrideInput || input).trim();
+    if (!userMsg || isLoading) return;
+
     setInput("");
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
     const response = await askDremi(userMsg, history);
     setMessages(prev => [...prev, { role: 'dremi', text: response || "Core communication failure." }]);
+    
+    // Voice feedback
+    if (response) speak(response);
     
     setHistory(prev => [
       ...prev,
@@ -39,10 +86,18 @@ export default function ChatInterface() {
     setIsLoading(false);
 
     // Analysis
-    if (messages.length > 0 && messages.length % 3 === 0) {
+    if (messages.length > 0 && (messages.length + 1) % 4 === 0) {
       getVibeAnalysis(userMsg).then(data => {
-        const [name, color] = data.split(",").map(s => s.trim());
-        if (name && color) updateVibe(name, color);
+        // Clean markdown and split
+        const clean = data.replace(/[`"']/g, '').trim();
+        const parts = clean.split(",");
+        if (parts.length >= 2) {
+          const name = parts[0].trim();
+          const color = parts[1].trim();
+          if (color.startsWith('#')) {
+            updateVibe(name, color);
+          }
+        }
       });
     }
   };
@@ -90,8 +145,13 @@ export default function ChatInterface() {
             placeholder="Awaiting command..."
             className="w-full bg-[#141417] border border-border rounded-full px-6 py-3 text-sm focus:outline-none focus:border-accent transition-colors text-white placeholder:text-text-muted"
             />
-            <div className="absolute right-4 text-accent">
-                <Mic size={18} />
+            <div className="absolute right-4 flex items-center gap-2">
+                <button 
+                  onClick={toggleVoiceInput}
+                  className={`p-1 transition-colors ${isListening ? 'text-accent animate-pulse' : 'text-text-muted hover:text-accent'}`}
+                >
+                  <Mic size={18} />
+                </button>
             </div>
         </div>
         <button 
