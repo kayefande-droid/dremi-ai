@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { Battery, Wifi, Database, Search, HardDrive, Thermometer, Cpu, Sparkles, Smartphone, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useVibe } from "../context/VibeContext";
+import { speak } from "../services/geminiService";
 
 export default function Dashboard() {
   const { currentVibe } = useVibe();
@@ -80,11 +81,21 @@ export default function Dashboard() {
             <Download size={16} className="text-accent ring-4 ring-accent/10 rounded-full" />
         </div>
         <div className="flex flex-col gap-3">
+           <div className="flex items-center justify-between px-1">
+                <span className="text-[7px] uppercase tracking-[0.4em] text-accent font-black">Initialization Protocol</span>
+                <div className="flex gap-1">
+                    <div className="w-1 h-1 rounded-full bg-accent animate-pulse" />
+                    <div className="w-1 h-1 rounded-full bg-accent animate-pulse delay-75" />
+                </div>
+           </div>
            <button 
-             onClick={() => window.alert("To install Dremi:\n1. Open browser menu\n2. Tap 'Add to Home Screen'\n3. Launch from your apps list for full-screen JARVIS experience.")}
-             className="bg-accent text-white text-center py-4 rounded-xl font-bold text-xs shadow-xl shadow-accent/20 active:scale-95 transition-all"
+             onClick={() => {
+                speak("To initialize full integration, open your device menu and select 'Add to Home Screen'. This will enable full-screen protocol and background processing.");
+             }}
+             className="bg-accent text-white text-center py-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-accent/20 active:scale-95 transition-all flex items-center justify-center gap-2"
            >
-             INSTALL DREMI CORE
+             <Smartphone size={14} />
+             Initialize Core PWA
            </button>
            <p className="text-[9px] text-text-muted text-center leading-relaxed px-4">
              Unlock full-screen mode, biometrics, and background protocols. 

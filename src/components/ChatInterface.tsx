@@ -5,7 +5,7 @@ import { askDremi, getVibeAnalysis, speak } from "../services/geminiService";
 import { useVibe } from "../context/VibeContext";
 
 export default function ChatInterface() {
-  const { updateVibe } = useVibe();
+  const { currentVibe, updateVibe } = useVibe();
   const [messages, setMessages] = useState<{ role: 'user' | 'dremi', text: string }[]>([
     { role: 'dremi', text: "Initialize protocol delta... Awaiting system instruction." }
   ]);
@@ -63,15 +63,16 @@ const [isListening, setIsListening] = useState(false);
     }
   };
 
-  const handleSend = async (overrideInput?: string) => {
-    const userMsg = (overrideInput || input).trim();
+  const handleSend = async (overrideInput?: any) => {
+    const textToUse = typeof overrideInput === 'string' ? overrideInput : input;
+    const userMsg = textToUse.trim();
     if (!userMsg || isLoading) return;
 
     setInput("");
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
-    const response = await askDremi(userMsg, history);
+    const response = await askDremi(userMsg, history, currentVibe);
     setMessages(prev => [...prev, { role: 'dremi', text: response || "Core communication failure." }]);
     
     // Voice feedback
@@ -155,7 +156,7 @@ const [isListening, setIsListening] = useState(false);
             </div>
         </div>
         <button 
-          onClick={handleSend}
+          onClick={() => handleSend()}
           className="bg-accent p-3 rounded-full text-white hover:bg-accent/80 transition-colors shadow-lg shadow-accent/20"
         >
           <Send size={18} />

@@ -24,7 +24,7 @@ export default function DremiCore() {
         setStatus("Analyzing intent...");
         
         try {
-            const response = await askDremi(transcript, []);
+            const response = await askDremi(transcript, [], currentVibe);
             setStatus("Transmitting console binary...");
             speak(response);
             setTimeout(() => setStatus("Core Latent"), 2000);
